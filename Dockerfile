@@ -15,3 +15,5 @@ RUN touch database/database.sqlite
 
 EXPOSE 10000
 CMD php artisan serve --host=0.0.0.0 --port=$PORT
+RUN chmod -R 775 storage bootstrap/cache
+RUN php artisan migrate --force
