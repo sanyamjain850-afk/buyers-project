@@ -10,7 +10,7 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::latest()->get();
+        $customers = Customer::where('user_id', auth()->id())->latest()->get();
         return view('customers.index', compact('customers'));
     }
 
@@ -33,6 +33,7 @@ class CustomerController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'subscribe' => $request->has('subscribe'),
+            'user_id' => auth()->id(),
         ]);
 
         return redirect()->route('customers.index')->with('success', 'User added successfully');
@@ -40,11 +41,15 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        abort_if($customer->user_id !== auth()->id(), 403);
+
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
     {
+        abort_if($customer->user_id !== auth()->id(), 403);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:customers,email,' . $customer->id,
@@ -69,6 +74,8 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        abort_if($customer->user_id !== auth()->id(), 403);
+
         $customer->delete();
         return redirect()->route('customers.index')->with('success', 'User deleted successfully');
     }
